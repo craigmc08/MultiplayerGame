@@ -21,6 +21,10 @@ var bulletRotationFrames = 200;
 // Array of obstacles in the game
 var obstacles = [];
 
+// Keep track of time since the last server update
+var lastServerUpdateTime = Date.now();
+var timeSinceServerUpdate = 0;
+
 var canvas = document.getElementById('canvas');
 canvas.width = SCREEN_WIDTH;
 canvas.height = SCREEN_HEIGHT;
@@ -144,7 +148,8 @@ function setupSocket() {
 
     // Update game data based on data from server (about 20Hz) (game/physics calculations are performed server side)
     socket.on('update', function update_players(data) {
-        framesSinceLastUpdate = 0;
+        lastServerUpdateTime = Date.now();
+        timeSinceServerUpdate = 0;
         PLAYER = data.player;
         players = data.players;
         bullets = data.bullets;
@@ -161,6 +166,7 @@ window.requestAnimFrame = (function () {
 // Client side game loop (input and graphics)
 function animLoop() {
     ANIM_LOOP_HANDLE = window.requestAnimFrame(animLoop);
+    timeSinceServerUpdate = Date.now() - lastServerUpdateTime;
     gameLoop();
 }
 
@@ -242,7 +248,11 @@ function gameLoop() {
             drawObstacle(obstacles[i]);
         }
     }
+    
+    $posdisplay.text(Math.round(PLAYER.x) + ', ' + Math.round(PLAYER.y));
 }
+
+var $posdisplay = $('#position');
 
 // Update an object
 function updateObject(o) {
@@ -270,11 +280,14 @@ function updateOwnPlayer(p) {
 }
 
 function interpolatePosition(x, y, px, py) {
-    var framesBetweenUpdates = FPS /SERVER_REFRESH_RATE;
-    var t = framesSinceLastUpdate / framesBetweenUpdates;
+    var t = Math.max(timeSinceServerUpdate / HALF_UPDATE_TIME(), 1);
     var ix = lerp(x, px, t);
     var iy = lerp(y, py, t);
     return {x: ix, y: iy};
+}
+
+function HALF_UPDATE_TIME() {
+    return (1000 / SERVER_REFRESH_RATE) / 2;
 }
 
 // Convert world coordinates to screen coordinates

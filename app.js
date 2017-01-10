@@ -32,6 +32,12 @@ var players = [];
 var bullets = [];
 var obstacles = [];
 
+// Test addd obstacle
+obstacles.push(util.generateNewObstacle(2250, 2250, 500, 500));
+
+// True if a server messages were sent and the move loop has NOT been run yet
+var noMoveSinceServer = false;
+
 app.use(express.static('static'));
 
 io.on('connection', function (socket) {
@@ -109,6 +115,8 @@ io.on('connection', function (socket) {
 
 // Send information to all the players
 function sendPlayersInfo() {
+    noMoveSinceServer = true;
+    
     players.forEach(function(p) {
         var sindex = util.getSocketIndex(p.id, sockets);        
         
@@ -153,12 +161,18 @@ function moveLoop() {
     // Update players
     //console.log(players.length);
     for (var i = 0; i < players.length; i++) {
+        if (noMoveSinceServer) {
+            players[i].lastpos.copy(players[i].circle.pos);
+        }
         players[i] = util.updatePlayer(players[i], players, bullets, obstacles);
     }
     
     // Update bullets
     for (var i = bullets.length - 1; i >= 0; i--) {
-        bullets[i] = util.updateBullet(bullets[i]);
+        if (noMoveSinceServer) {
+            bullets[i].lastpos.copy(bullets[i].circle.pos);
+        }
+        bullets[i] = util.updateBullet(bullets[i], obstacles);
         // Kill bullet if its too far away
         if (bullets[i].circle.pos.x < 0 || bullets[i].circle.pos.x > GAME_WIDTH || bullets[i].circle.pos.y < 0 || bullets[i].circle.pos.y > GAME_HEIGHT) {
             bullets.splice(i, 1);
@@ -166,7 +180,13 @@ function moveLoop() {
     }
     
     // Update obstacles
-    // NOT NEEDED YET
+    for (var i = obstacles.length - 1; i >= 0; i--) {
+        if (noMoveSinceServer) {
+            obstacles[i].lastpos.copy(obstacles[i].box.pos);
+        }
+    }
+    
+    noMoveSinceServer = false;
 }
 
 // Create loops
