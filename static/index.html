@@ -1,0 +1,106 @@
+<html>
+    <head>
+        <title>Wander Shoot</title>
+        
+        <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+        
+        <style>
+            html {
+                font-family: 'Roboto' !important;
+            }
+            
+            #canvas {
+                position: fixed;
+                top: 0;
+                left: 0;
+            }
+            
+            #darkener {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.7);
+                z-index: 10;
+            }
+            
+            #menu {
+                background-color: rgb(255, 255, 255);
+                z-index: 12;
+                position: fixed;
+                border-radius: 15px;
+                padding: 10px 25px;
+                text-align: center;
+            }
+            
+            #menu .subtitle {
+                color: rgba(0, 0, 0, 0.54);
+                font-size: 20px;
+            }
+            
+            #menu .text-input {
+                width: 100%;
+                height: 2em;
+                padding: 0 5px;
+                font-size: 20px;
+                border-radius: 5px;
+                border-style: solid;
+                border-color: rgba(0, 0, 0, 0.15);
+                transition: border-color 0.1s linear;
+                outline: none;
+                text-align: center;
+            }
+            #menu .text-input:focus {
+                border-color: rgba(0, 0, 0, 0.3);
+            }
+            
+            #menu button {
+                text-transform: uppercase;
+                width: 100%;
+                height: 1.5em;
+                color: white;
+                font-size: 20px;
+                margin: 10px 0;
+                border: none;
+                border-radius: 5px;
+                background-color: hsl(129, 100%, 70%);
+                box-shadow: 0 4px 0 hsl(129, 100%, 40%);
+                transition: box-shadow 0.05s linear, transform 0.05s linear;
+                outline: none;
+            }
+            #menu button:hover {
+                box-shadow: 0 3px 0 hsl(129, 100%, 40%);
+                transform: translate(0, 1px);
+            }
+            #menu button:active {
+                box-shadow: 0 2px 0 hsl(129, 100%, 40%);
+                transform: translate(0, 2px);
+            }
+        </style>
+    </head>
+    <body>
+        
+        <div id="m-container">
+            <div id="menu">
+                <h1 class="title">Some Game</h1>
+                <h2 class="subtitle">A game that is some</h2>
+
+                <input type="text" class="text-input" id="name" placeholder="Username">
+                <br>
+                <button id="join">join</button>
+            </div>
+            <span id="darkener"></span>
+        </div>
+        
+        <canvas id="canvas" width="0" height="0">
+        </canvas>
+        
+        <!-- Scripts -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/js/global.js"></script>
+        <script src="/js/draw.js"></script>
+        <script src="/js/app.js"></script>
+    </body>
+</html>
