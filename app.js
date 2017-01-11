@@ -33,8 +33,11 @@ var players = [];
 var bullets = [];
 var obstacles = [];
 
-// Test addd obstacle
-obstacles.push(util.generateNewObstacle(2250, 2250, 500, 500));
+// Generate some obstacles
+var amountofobstacles = 50;
+for (var i = 0; i < amountofobstacles; i++) {
+    util.tryGenerateNewObstacle(obstacles);
+}
 
 // True if a server messages were sent and the move loop has NOT been run yet
 var noMoveSinceServer = false;
@@ -108,6 +111,13 @@ io.on('connection', function (socket) {
         bullets.push(util.generateNewBullet(direction, players[util.getPlayerIndex(socket.id, players)]));
     });
     
+    socket.on('client_update', function (data) {
+        var pindex = util.getPlayerIndex(socket.id, players);
+        var dir = new V(data.dir.x, data.dir.y).normalize();
+        var theta = Math.atan2(dir.x, dir.y);
+        players[pindex].setDirection(theta);
+    });
+    
     socket.on('disconnect', function() {
         console.log('A player disconnected');
         if (util.getPlayerIndex(socket.id, players) > -1) players.splice(util.getPlayerIndex(socket.id, players), 1);
@@ -154,6 +164,9 @@ function sendPlayersInfo() {
         };
         
         sockets[sindex].emit('update', message);
+        
+        // Ask them for some info
+        sockets[sindex].emit('update_request');
     });
 }
 

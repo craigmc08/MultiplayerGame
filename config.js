@@ -10,5 +10,7 @@ module.exports = {
     bulletSpeed: 10,
     bulletDamageMultiplier: 1,
     bulletPushModifier: 2,
-    serverMessageRate: 20
+    serverMessageRate: 20,
+    minObstacleSize: 100,
+    maxObstacleSize: 300
 };

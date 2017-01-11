@@ -4,12 +4,12 @@ function drawGrid() {
     graph.strokeStyle = LINE_COLOR;
     graph.beginPath();
     
-    for (var x = -camera.x; x < SCREEN_WIDTH; x += SCREEN_HEIGHT / GRID_LINES) {
+    for (var x = -camera.x - SCREEN_WIDTH / 2; x < SCREEN_WIDTH; x += SCREEN_HEIGHT / GRID_LINES * zoom) {
         graph.moveTo(x, 0);
         graph.lineTo(x, SCREEN_HEIGHT);
     }
     
-    for (var y = -camera.y; y < SCREEN_HEIGHT; y += SCREEN_HEIGHT / GRID_LINES) {
+    for (var y = -camera.y - SCREEN_HEIGHT / 2; y < SCREEN_HEIGHT; y += SCREEN_HEIGHT / GRID_LINES * zoom) {
         graph.moveTo(0, y);
         graph.lineTo(SCREEN_WIDTH, y);
     }
@@ -42,12 +42,27 @@ function drawBounds() {
 }
 
 function drawPlayer(p) {
-    // Draw main shape
+    // Draw strange appendage
     graph.globalAlpha = 1;
+    graph.strokeStyle = hsl(0, 0, 30);
+    graph.fillStyle = hsl(0, 0, 60);
+    graph.lineWidth = playerConfig.border / 2;
+    graph.beginPath();
+    var theta1 = p.theta - Math.PI * 0.1;
+    var theta2 = p.theta + Math.PI * 0.1;
+    graph.moveTo(p.screenX, p.screenY);
+    graph.lineTo(p.screenX + (p.r * zoom * 1.5) * Math.sin(theta1), p.screenY + (p.r * 1.5 * zoom) * Math.cos(theta1));
+    graph.lineTo(p.screenX + (p.r * zoom * 1.5) * Math.sin(theta2), p.screenY + (p.r * 1.5 * zoom) * Math.cos(theta2));
+    graph.lineTo(p.screenX, p.screenY);
+    graph.closePath();
+    graph.fill();
+    graph.stroke();
+    
+    // Draw main shape
     graph.strokeStyle = hsl(p.hue, playerConfig.colorStroke.saturation, playerConfig.colorStroke.brightness);
     graph.fillStyle = hsl(p.hue, playerConfig.colorFill.saturation, playerConfig.colorFill.brightness);
     graph.lineWidth = playerConfig.border;
-    drawRegularPolygon(p.screenX, p.screenY, p.r, PLAYER_SIDES);
+    drawRegularPolygon(p.screenX, p.screenY, p.r, PLAYER_SIDES, p.theta);
     
     // Draw name
     graph.fillStyle = playerConfig.nameColor;
@@ -58,8 +73,8 @@ function drawPlayer(p) {
     
     // Draw health bar
     graph.fillStyle = HEALTH_BAR_COLOR_NONE;
-    var hbarw = p.r * 2 * 1.41;
-    var hbaryoff = p.r * -1.41 - HEALTH_BAR_HEIGHT;
+    var hbarw = p.r * zoom * 2 * 1.41;
+    var hbaryoff = p.r  * zoom * -2 - HEALTH_BAR_HEIGHT;
     graph.fillRect(p.screenX - hbarw / 2, p.screenY + hbaryoff, hbarw, HEALTH_BAR_HEIGHT);
     graph.fillStyle = HEALTH_BAR_COLOR_SOME;
     var hbarfw = hbarw * (p.health / MAX_PLAYER_HEALTH);
@@ -79,7 +94,7 @@ function drawObstacle(o) {
     graph.strokeStyle = hsl(o.hue, obstacleConfig.colorStroke.saturation, obstacleConfig.colorStroke.brightness);
     graph.fillStyle = hsl(o.hue, obstacleConfig.colorFill.saturation, obstacleConfig.colorFill.brightness);
     graph.lineWidth = obstacleConfig.border;
-    drawRect(o.screenX, o.screenY, o.w, o.h);
+    drawRect(o.screenX, o.screenY, o.w * zoom, o.h * zoom);
 }
 
 function drawRegularPolygon(cx, cy, r, n, t) {
@@ -87,6 +102,7 @@ function drawRegularPolygon(cx, cy, r, n, t) {
     var theta = 0;
     var x = 0;
     var y = 0;
+    r *= zoom;
     
     graph.beginPath();
     

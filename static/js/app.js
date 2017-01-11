@@ -21,6 +21,9 @@ var bulletRotationFrames = 200;
 // Array of obstacles in the game
 var obstacles = [];
 
+// Zoom of camera (more = closer)
+var zoom = 1;
+
 // Keep track of time since the last server update
 var lastServerUpdateTime = Date.now();
 var timeSinceServerUpdate = 0;
@@ -154,6 +157,14 @@ function setupSocket() {
         players = data.players;
         bullets = data.bullets;
         obstacles = data.obstacles;
+    });
+    
+    // Send data that it asks for
+    socket.on('update_request', function send_data() {
+        var data = {
+            dir: getDirection()
+        };
+        socket.emit('client_update', data);
     });
 }
 
@@ -289,8 +300,8 @@ function GET_LERP_TIME() {
 // Convert world coordinates to screen coordinates
 function worldToScreen(pos) {
     return {
-        x: pos.x - camera.x,
-        y: pos.y - camera.y
+        x: (pos.x - camera.x) * zoom,
+        y: (pos.y - camera.y) * zoom
     };
 }
 
@@ -338,6 +349,12 @@ $(document).keydown(function (event) {
             socket.emit('move_right');
         } else if (key == KEY_SPRINT && !keys[key]) {
             socket.emit('start_sprint');
+        } else if (key == KEY_ZOOM_OUT && !keys[key]) {
+            zoom *= 0.90909;
+            zoom = 1;
+        } else if (key == KEY_ZOOM_IN && !keys[key]) {
+            zoom *= 1.1;
+            zoom = 1;
         }
     }
     keys[key] = true;

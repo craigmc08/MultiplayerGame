@@ -7,6 +7,8 @@ var KEY_RIGHT = 68;
 var KEY_DOWN = 83;
 var KEY_SPRINT = 16;
 var KEY_ENTER = 13;
+var KEY_ZOOM_OUT = 189;
+var KEY_ZOOM_IN = 187;
 
 // DRAWING
 var PLAYER_SIDES = 10;
