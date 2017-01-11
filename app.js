@@ -6,7 +6,8 @@ var SAT = require('sat');
 
 // Import util
 var util = require('./lib/util');
-
+// Import objects
+var O = require('./lib/physicsobjects');
 // Import config settings
 var config = require('./config');
 
@@ -51,7 +52,7 @@ io.on('connection', function (socket) {
         var pindex = util.getPlayerIndex(socket.id, players);
         players[pindex].name = util.validateName(data.name);
         console.log('A player successfully connected');
-        var preparedPlayer = util.preparePlayerForClient(players[pindex]);
+        var preparedPlayer = players[pindex].prepareForClient();
         socket.emit('connect_success', preparedPlayer);
         
         socket.emit('game_setup', {width: GAME_WIDTH, height: GAME_HEIGHT, refresh: serverMessageRate});
@@ -121,7 +122,7 @@ function sendPlayersInfo() {
         var sindex = util.getSocketIndex(p.id, sockets);        
         
         // Prepare this player
-        var playerToSend = util.preparePlayerForClient(p);
+        var playerToSend = p.prepareForClient();
         
         // Prepare other players (and remove this one)
         var playersToSend = players.slice(0);
@@ -131,17 +132,17 @@ function sendPlayersInfo() {
             }
         }
         playersToSend = playersToSend.map(function (p2) {
-            return util.preparePlayerForClient(p2);
+            return p2.prepareForClient();
         });
         
         // Prepare bullets
         var bulletsToSend = bullets.map(function (b) {
-            return util.prepareBulletForClient(b);
+            return b.prepareForClient();
         });
         
         // Prepare obstacles
         var obstaclesToSend = obstacles.map(function (o) {
-            return util.prepareObstacleForClient(o);
+            return o.prepareForClient();
         });
         
         // Assemble message
@@ -161,29 +162,23 @@ function moveLoop() {
     // Update players
     //console.log(players.length);
     for (var i = 0; i < players.length; i++) {
-        if (noMoveSinceServer) {
-            players[i].lastpos.copy(players[i].circle.pos);
-        }
-        players[i] = util.updatePlayer(players[i], players, bullets, obstacles);
+        players[i].update(noMoveSinceServer, players, bullets, obstacles);
     }
     
     // Update bullets
     for (var i = bullets.length - 1; i >= 0; i--) {
-        if (noMoveSinceServer) {
-            bullets[i].lastpos.copy(bullets[i].circle.pos);
-        }
-        bullets[i] = util.updateBullet(bullets[i], obstacles);
+        bullets[i].update(noMoveSinceServer, obstacles);
+        
         // Kill bullet if its too far away
         if (bullets[i].circle.pos.x < 0 || bullets[i].circle.pos.x > GAME_WIDTH || bullets[i].circle.pos.y < 0 || bullets[i].circle.pos.y > GAME_HEIGHT) {
             bullets.splice(i, 1);
+            continue;
         }
     }
     
     // Update obstacles
     for (var i = obstacles.length - 1; i >= 0; i--) {
-        if (noMoveSinceServer) {
-            obstacles[i].lastpos.copy(obstacles[i].box.pos);
-        }
+        obstacles[i].update(noMoveSinceServer);
     }
     
     noMoveSinceServer = false;
@@ -192,8 +187,6 @@ function moveLoop() {
 // Create loops
 setInterval(moveLoop, 1000 / 60);
 setInterval(sendPlayersInfo, 1000 / serverMessageRate);
-
-                                                          //
 
 var ipaddress = process.env.OPENSHIFT_NODEJS_IP || process.env.IP || '0.0.0.0';
 var serverport = process.env.OPENSHIFT_NODEJS_PORT || process.env.PORT || 80;

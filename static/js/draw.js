@@ -42,16 +42,28 @@ function drawBounds() {
 }
 
 function drawPlayer(p) {
+    // Draw main shape
     graph.globalAlpha = 1;
     graph.strokeStyle = hsl(p.hue, playerConfig.colorStroke.saturation, playerConfig.colorStroke.brightness);
     graph.fillStyle = hsl(p.hue, playerConfig.colorFill.saturation, playerConfig.colorFill.brightness);
     graph.lineWidth = playerConfig.border;
     drawRegularPolygon(p.screenX, p.screenY, p.r, PLAYER_SIDES);
+    
+    // Draw name
     graph.fillStyle = playerConfig.nameColor;
     graph.textAlign = 'center';
     graph.textBaseline = 'middle';
     graph.font = '20px Roboto';
     graph.fillText(p.name, p.screenX, p.screenY, p.r * 2);
+    
+    // Draw health bar
+    graph.fillStyle = HEALTH_BAR_COLOR_NONE;
+    var hbarw = p.r * 2 * 1.41;
+    var hbaryoff = p.r * -1.41 - HEALTH_BAR_HEIGHT;
+    graph.fillRect(p.screenX - hbarw / 2, p.screenY + hbaryoff, hbarw, HEALTH_BAR_HEIGHT);
+    graph.fillStyle = HEALTH_BAR_COLOR_SOME;
+    var hbarfw = hbarw * (p.health / MAX_PLAYER_HEALTH);
+    graph.fillRect(p.screenX - hbarw / 2, p.screenY + hbaryoff, hbarfw, HEALTH_BAR_HEIGHT);
 }
 
 function drawBullet(b) {

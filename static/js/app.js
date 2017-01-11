@@ -167,6 +167,7 @@ window.requestAnimFrame = (function () {
 function animLoop() {
     ANIM_LOOP_HANDLE = window.requestAnimFrame(animLoop);
     timeSinceServerUpdate = Date.now() - lastServerUpdateTime;
+    //console.log(Math.min(timeSinceServerUpdate / GET_LERP_TIME(), 1));
     gameLoop();
 }
 
@@ -194,13 +195,8 @@ if (test_data) {
     };
 }
 
-
-// Keeps tracks of frames since last server update, for interpolating positions
-var framesSinceLastUpdate = 0;
-
 // All client side game logic is execute here
 function gameLoop() {
-    framesSinceLastUpdate++;
     graph.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     drawBackground();
     drawGrid();
@@ -238,14 +234,14 @@ function gameLoop() {
         for (var i = 0; i < bullets.length; i++) {
             drawBullet(bullets[i]);
         }
+        // Draw obstacles
+        for (var i = 0; i < obstacles.length; i++) {
+            drawObstacle(obstacles[i]);
+        }
         // Draw players
         drawPlayer(PLAYER);
         for (var i = 0; i < players.length; i++) {
             drawPlayer(players[i]);
-        }
-        // Draw obstacles
-        for (var i = 0; i < obstacles.length; i++) {
-            drawObstacle(obstacles[i]);
         }
     }
     
@@ -280,13 +276,13 @@ function updateOwnPlayer(p) {
 }
 
 function interpolatePosition(x, y, px, py) {
-    var t = Math.max(timeSinceServerUpdate / HALF_UPDATE_TIME(), 1);
+    var t = Math.min(timeSinceServerUpdate / GET_LERP_TIME(), 1);
     var ix = lerp(x, px, t);
     var iy = lerp(y, py, t);
     return {x: ix, y: iy};
 }
 
-function HALF_UPDATE_TIME() {
+function GET_LERP_TIME() {
     return (1000 / SERVER_REFRESH_RATE) / 2;
 }
 
